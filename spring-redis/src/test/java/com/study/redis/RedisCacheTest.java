@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,7 +27,7 @@ public class RedisCacheTest extends TestConfig {
 
     @BeforeEach
     public void init() {
-        redisTemplate.delete(Arrays.asList("test1", "test2"));
+        redisMemberRepository.deleteAll();
 
         Member member = Member.builder()
                 .id(1L)
@@ -98,8 +97,7 @@ public class RedisCacheTest extends TestConfig {
         assertThat(getMember).isNotNull();
         assertThat(getMember.getId()).isEqualTo(3L);
         assertThat(getMember.getName()).isEqualTo("test3");
-        // TODO: 2022/11/21 왜 createdAt 은 Null 로 되는것인가? 
-//        assertThat(getMember.getCreatedAt()).isNotNull();
+        assertThat(getMember.getCreatedAt()).isNotNull();
     }
 
 }
