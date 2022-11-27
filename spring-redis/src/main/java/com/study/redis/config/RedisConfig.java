@@ -44,6 +44,7 @@ public class RedisConfig {
     private ObjectMapper getObjectMapper() {
         ObjectMapper customObjectMapper = objectMapper.copy();
         customObjectMapper.registerModule(new JavaTimeModule());
+        customObjectMapper.activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(), ObjectMapper.DefaultTyping.NON_FINAL);
 
         return customObjectMapper;
     }

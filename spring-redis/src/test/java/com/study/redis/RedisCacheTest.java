@@ -3,6 +3,7 @@ package com.study.redis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.study.redis.domain.Member;
 import com.study.redis.repository.RedisMemberRepository;
+import com.study.redis.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,9 @@ public class RedisCacheTest extends TestConfig {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private MemberService memberService;
 
     @Autowired
     private RedisMemberRepository redisMemberRepository;
@@ -127,6 +131,18 @@ public class RedisCacheTest extends TestConfig {
         redisMemberRepository.deleteById(2L);
 
         assertThrows(IllegalArgumentException.class, () -> redisMemberRepository.findById(2L).orElseThrow(IllegalArgumentException::new));
+    }
+
+    @Test
+    public void getCache_Cacheable() {
+        memberService.getCacheMember();
+    }
+
+    @Test
+    public void deleteCache_CacheEvict() {
+        memberService.deleteCacheMember();
+
+        assertThrows(IllegalArgumentException.class, () -> redisMemberRepository.findById(10L).orElseThrow(IllegalArgumentException::new));
     }
 
 }
