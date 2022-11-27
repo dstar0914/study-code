@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import java.time.OffsetDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Slf4j
 public class RedisCacheTest extends TestConfig {
@@ -27,15 +28,26 @@ public class RedisCacheTest extends TestConfig {
 
     @BeforeEach
     public void init() {
+        // Flush all.
         redisMemberRepository.deleteAll();
 
-        Member member = Member.builder()
+        // Create cache with redisTemplate.
+        Member redisTemplateMember = Member.builder()
                 .id(1L)
                 .name("test1")
                 .createdAt(OffsetDateTime.now())
                 .build();
 
-        redisTemplate.opsForValue().set("test1", member);
+        redisTemplate.opsForValue().set("test1", redisTemplateMember);
+
+        // Create cache with redisRepository.
+        Member repositoryMember = Member.builder()
+                .id(2L)
+                .name("test2")
+                .createdAt(OffsetDateTime.now())
+                .build();
+
+        redisMemberRepository.save(repositoryMember);
     }
 
     @Test
@@ -98,6 +110,23 @@ public class RedisCacheTest extends TestConfig {
         assertThat(getMember.getId()).isEqualTo(3L);
         assertThat(getMember.getName()).isEqualTo("test3");
         assertThat(getMember.getCreatedAt()).isNotNull();
+    }
+
+    @Test
+    public void getCache_Repository() throws Exception {
+        Member getMember = redisMemberRepository.findById(2L).orElseThrow(IllegalArgumentException::new);
+
+        assertThat(getMember).isNotNull();
+        assertThat(getMember.getId()).isEqualTo(2L);
+        assertThat(getMember.getName()).isEqualTo("test2");
+        assertThat(getMember.getCreatedAt()).isNotNull();
+    }
+
+    @Test
+    public void deleteCache_Repository() {
+        redisMemberRepository.deleteById(2L);
+
+        assertThrows(IllegalArgumentException.class, () -> redisMemberRepository.findById(2L).orElseThrow(IllegalArgumentException::new));
     }
 
 }
